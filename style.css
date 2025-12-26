@@ -1,0 +1,143 @@
+/* --- GOVERNMENT PORTAL THEME --- */
+
+:root {
+    --primary-navy: #002D62;  /* Official Bureaucratic Navy */
+    --accent-gold: #B8860B;   /* Professional Legal Gold */
+    --bg-gray: #F2F4F7;
+    --border-subtle: #D1D9E0;
+    --text-main: #1A202C;
+    --white: #FFFFFF;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-gray);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 1100px;
+    background: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border-top: 6px solid var(--primary-navy);
+    overflow: hidden;
+}
+
+/* Header Area */
+.header {
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    font-size: 1.4rem;
+    color: var(--primary-navy);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.header-title p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.badge {
+    background: var(--accent-gold);
+    color: var(--white);
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* Main Translation Grid */
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: var(--border-subtle);
+    gap: 1px;
+}
+
+.editor-pane {
+    background: var(--white);
+    padding: 30px;
+}
+
+.label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #888;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+textarea {
+    width: 100%;
+    height: 400px;
+    border: none;
+    resize: none;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    outline: none;
+}
+
+/* Footer Section */
+.footer {
+    padding: 20px 40px;
+    background: #FAFBFC;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-text {
+    font-size: 0.8rem;
+    color: #718096;
+    max-width: 60%;
+}
+
+.btn-primary {
+    background: var(--primary-navy);
+    color: var(--white);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #001A3A;
+}
+
+/* Animation */
+.loading-pulse {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .footer { flex-direction: column; gap: 20px; text-align: center; }
+}
