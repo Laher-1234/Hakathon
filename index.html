@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    /* --- CSS: The Professional Look --- */
+    :root {
+      --gov-navy: #003366;
+      --gov-gold: #c5a059;
+      --bg-gray: #f8f9fa;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-gray);
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-top: 5px solid var(--gov-navy);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 25px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h2 {
+      margin: 0;
+      color: var(--gov-navy);
+      font-size: 1.25rem;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      background: var(--gov-gold);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+
+    .translator-box {
+      display: flex;
+      flex-wrap: wrap;
+      background: var(--border);
+      gap: 1px;
+    }
+
+    .panel {
+      flex: 1;
+      min-width: 300px;
+      background: white;
+      padding: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #64748b;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      border: 1px solid transparent;
+      padding: 10px;
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    textarea:focus {
+      background: #fdfdfd;
+    }
+
+    .footer {
+      padding: 20px;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    button {
+      background: var(--gov-navy);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #002244;
+    }
+
+    button:disabled {
+      background: #94a3b8;
+    }
+
+    .disclaimer {
+      font-size: 0.75rem;
+      color: #64748b;
+      max-width: 60%
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-title">
+        <h2>Government Translation Portal</h2>
+      </div>
+      <div class="badge">SECURE API ACCESS</div>
+    </div>
+
+    <div class="translator-box">
+      <div class="panel">
+        <label>Source Document (English)</label>
+        <textarea id="sourceText" placeholder="Paste technical, legal, or bureaucratic text here..."></textarea>
+      </div>
+      <div class="panel">
+        <label>Official Translation (Local Language)</label>
+        <textarea id="targetText" readonly placeholder="Translated output will appear here..."></textarea>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="disclaimer">
+        <strong>Note:</strong> This engine uses government-approved terminologies to ensure the integrity of legal definitions.
+      </div>
+      <button id="translateBtn" onclick="startTranslation()">Process Translation</button>
+    </div>
+  </div>
+
+  <script>
+    function startTranslation() {
+      const btn = document.getElementById('translateBtn');
+      const source = document.getElementById('sourceText').value;
+      const target = document.getElementById('targetText');
+
+      if (!source.trim()) {
+        alert("Please enter text to translate.");
+        return;
+      }
+
+      // UI Loading State
+      btn.disabled = true;
+      btn.innerText = "Applying Glossary...";
+      target.placeholder = "Consulting legal corpus...";
+
+      // Connect to the Code.gs function
+      google.script.run
+        .withSuccessHandler((result) => {
+          target.value = result;
+          btn.disabled = false;
+          btn.innerText = "Process Translation";
+        })
+        .withFailureHandler((err) => {
+          alert("Error: " + err);
+          btn.disabled = false;
+          btn.innerText = "Process Translation";
+        })
+        .getLegalTranslation(source);
+    }
+  </script>
+</body>
+</html>
