@@ -1,68 +1,52 @@
-// server.js - GovTrans Backend Engine
 const express = require('express');
+const multer = require('multer');
 const { TranslationServiceClient } = require('@google-cloud/translate');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+const upload = multer({ storage: multer.memoryStorage() }); // Store files in memory buffer
 app.use(cors());
 app.use(express.json());
 
-// Initialize Google Translation Client
-// It will automatically look for GOOGLE_APPLICATION_CREDENTIALS in your environment
+// Initialize Clients
 const translationClient = new TranslationServiceClient();
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Configuration - Replace these with your Google Cloud details
-const projectId = process.env.PROJECT_ID || 'your-project-id';
-const location = 'us-central1';
-const glossaryId = 'legal-official-glossary'; // The ID of your uploaded legal corpus
-
-/**
- * Endpoint to handle specialized legal translation
- */
-app.post('/translate-legal', async (req, res) => {
-    const { text } = req.body;
-
-    if (!text) {
-        return res.status(400).json({ error: "No text provided" });
-    }
-
-    // Configure the request with Glossary support
-    const request = {
-        parent: `projects/${projectId}/locations/${location}`,
-        contents: [text],
-        mimeType: 'text/plain',
-        sourceLanguageCode: 'en',
-        targetLanguageCode: 'es', // Set to your desired local language
-        glossaryConfig: {
-            glossary: `projects/${projectId}/locations/${location}/glossaries/${glossaryId}`,
-            ignoreCase: true,
-        },
-    };
-
+app.post('/process-document', upload.single('document'), async (req, res) => {
     try {
-        // 
-        const [response] = await translationClient.translateText(request);
-        
-        // We prioritize glossary translations over general machine translation
-        const translation = response.glossaryTranslations.length > 0 
-            ? response.glossaryTranslations[0].translatedText 
-            : response.translations[0].translatedText;
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-        res.json({ translatedText: translation });
+        const fileContent = req.file.buffer.toString('utf8'); // Convert file buffer to string
+        const { action, targetLanguage } = req.body; // Action: 'translate' or 'summarize'
+
+        if (action === 'summarize') {
+            // --- CHATBOT SUMMARIZATION (Gemini) ---
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            const prompt = `You are a government legal assistant. Please provide a concise, high-level summary of this document, highlighting key technical terms and obligations: ${fileContent}`;
+            
+            const result = await model.generateContent(prompt);
+            const summary = result.response.text();
+            return res.json({ result: summary });
+
+        } else if (action === 'translate') {
+            // --- SPECIALIZED TRANSLATION ---
+            const request = {
+                parent: `projects/${process.env.PROJECT_ID}/locations/us-central1`,
+                contents: [fileContent],
+                mimeType: 'text/plain',
+                sourceLanguageCode: 'en',
+                targetLanguageCode: targetLanguage || 'es',
+            };
+            const [response] = await translationClient.translateText(request);
+            return res.json({ result: response.translations[0].translatedText });
+        }
+
     } catch (error) {
-        console.error('Translation Error:', error);
-        res.status(500).json({ 
-            error: "Failed to process legal translation", 
-            message: error.details || error.message 
-        });
+        console.error("Processing Error:", error);
+        res.status(500).json({ error: "Failed to process document" });
     }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`-----------------------------------------------`);
-    console.log(`GovTrans Legal Engine active on port ${PORT}`);
-    console.log(`Target Glossary: ${glossaryId}`);
-    console.log(`-----------------------------------------------`);
-});
+app.listen(3000, () => console.log("Engine running on port 3000"));
